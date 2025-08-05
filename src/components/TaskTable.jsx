@@ -59,7 +59,9 @@ const TaskTable = () => {
       Lote: task.lote,
       Tarea: task.tarea,
       Hectáreas: task.hectareas,
-      Maquinaria: task.maquinaria,
+      'USD/ha': task.usdPorHa,
+      'Total USD': (task.hectareas * task.usdPorHa).toFixed(2),
+      nroOrden: task.nroorden,
       Observaciones: task.observaciones,
       Facturado: task.facturado ? '✔' : '✘',
       Cobrado: task.cobrado ? '✔' : '✘',
@@ -80,7 +82,9 @@ const TaskTable = () => {
       task.lote,
       task.tarea,
       task.hectareas,
-      task.maquinaria,
+      task.usdPorHa,
+      (task.hectareas * task.usdPorHa).toFixed(2),
+      task.nroorden,
       task.observaciones,
       task.facturado ? '✔' : '✘',
       task.cobrado ? '✔' : '✘',
@@ -88,9 +92,9 @@ const TaskTable = () => {
 
     autoTable(doc, {
       startY: 20,
-      head: [['Fecha', 'Cliente', 'Campo', 'Lote', 'Tarea', 'Ha', 'Maquinaria', 'Observaciones', 'Facturado', 'Cobrado']],
+      head: [['Fecha', 'Cliente', 'Campo', 'Lote', 'Tarea', 'Ha', 'USD/ha', 'Total USD', 'Nro Orden', 'Observaciones', 'Facturado', 'Cobrado']],
       body: tableData,
-      styles: { fontSize: 8 },
+      styles: { fontSize: 7 },
       theme: 'grid',
     });
 
@@ -98,12 +102,13 @@ const TaskTable = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <TaskFilters filters={filters} setFilters={setFilters} />
-
-      <div style={{ display: 'flex', gap: '12px', margin: '15px 0' }}>
+    <div>
+      <div className="table-controls">
+        <TaskFilters filters={filters} setFilters={setFilters} />
+        <div style={{ display: 'flex', gap: '12px', margin: '15px 0' }}>
         <button className="btn" onClick={() => exportToExcel(filteredTasks)}>📥 Exportar a Excel</button>
         <button className="btn" onClick={() => exportToPDF(filteredTasks)}>📄 Exportar a PDF</button>
+      </div>
       </div>
 
       <table className="task-table">
@@ -115,7 +120,9 @@ const TaskTable = () => {
             <th>Lote</th>
             <th>Tarea</th>
             <th>Ha</th>
-            <th>Maquinaria</th>
+            <th>USD/ha</th>
+            <th>Total USD</th>
+            <th>Nro Orden</th>
             <th>Observaciones</th>
             <th>Facturado</th>
             <th>Cobrado</th>
@@ -131,7 +138,9 @@ const TaskTable = () => {
               <td>{task.lote}</td>
               <td>{task.tarea}</td>
               <td>{task.hectareas}</td>
-              <td>{task.maquinaria}</td>
+              <td>{task.usdPorHa}</td>
+              <td>{(task.hectareas * task.usdPorHa).toFixed(2)}</td>
+              <td>{task.nroorden}</td>
               <td>{task.observaciones}</td>
               <td>{task.facturado ? '✔' : '✘'}</td>
               <td>{task.cobrado ? '✔' : '✘'}</td>
@@ -156,4 +165,5 @@ const TaskTable = () => {
 };
 
 export default TaskTable;
+
 

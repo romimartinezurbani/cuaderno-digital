@@ -13,7 +13,8 @@ const TaskForm = () => {
     lote: '',
     tarea: '',
     hectareas: '',
-    maquinaria: '',
+    usdPorHa: '',
+    nroorden: '',
     observaciones: '',
     facturado: false,
     cobrado: false,
@@ -47,7 +48,8 @@ const TaskForm = () => {
         lote: '',
         tarea: '',
         hectareas: '',
-        maquinaria: '',
+        usdPorHa: '',
+        nroorden: '',
         observaciones: '',
         facturado: false,
         cobrado: false,
@@ -112,8 +114,20 @@ const TaskForm = () => {
       </div>
 
       <div className="form-group">
-        <label>Maquinaria utilizada:</label>
-        <input type="text" name="maquinaria" value={formData.maquinaria} onChange={handleChange} />
+        <label>USD por ha:</label>
+        <input
+          type="number"
+          name="usdPorHa"
+          value={formData.usdPorHa}
+          onChange={handleChange}
+          min="0"
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Nro Orden:</label>
+        <input type="text" name="nro orden" value={formData.nroorden} onChange={handleChange} />
       </div>
 
       <div className="form-group">

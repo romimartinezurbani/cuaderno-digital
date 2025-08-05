@@ -1,0 +1,23 @@
+.billing-dashboard {
+  padding: 2rem;
+}
+
+.billing-dashboard h2 {
+  margin-bottom: 1rem;
+}
+
+.billing-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.billing-table th,
+.billing-table td {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+.billing-table th {
+  background-color: #f0f0f0;
+}

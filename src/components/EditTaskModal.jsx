@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../styles/EditTaskModal.css'
+import '../styles/EditTaskModal.css';
 
 const EditTaskModal = ({ task, onClose, onSave }) => {
   const [editedTask, setEditedTask] = useState({ ...task });
@@ -49,7 +49,23 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
           </label>
           <label>
             Hectáreas:
-            <input type="number" name="hectareas" value={editedTask.hectareas} onChange={handleChange} />
+            <input
+              type="number"
+              name="hectareas"
+              value={editedTask.hectareas}
+              onChange={handleChange}
+              min="0"
+            />
+          </label>
+          <label>
+            USD por ha:
+            <input
+              type="number"
+              name="usdPorHa"
+              value={editedTask.usdPorHa}
+              onChange={handleChange}
+              min="0"
+            />
           </label>
           <label>
             Maquinaria:
@@ -61,11 +77,21 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
           </label>
           <div className="form-group checkbox">
             <label>
-              <input type="checkbox" name="facturado" checked={editedTask.facturado} onChange={handleChange} />
+              <input
+                type="checkbox"
+                name="facturado"
+                checked={editedTask.facturado}
+                onChange={handleChange}
+              />
               Facturado
             </label>
             <label>
-              <input type="checkbox" name="cobrado" checked={editedTask.cobrado} onChange={handleChange} />
+              <input
+                type="checkbox"
+                name="cobrado"
+                checked={editedTask.cobrado}
+                onChange={handleChange}
+              />
               Cobrado
             </label>
           </div>
@@ -80,4 +106,5 @@ const EditTaskModal = ({ task, onClose, onSave }) => {
 };
 
 export default EditTaskModal;
+
 
