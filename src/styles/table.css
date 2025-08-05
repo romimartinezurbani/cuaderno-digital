@@ -1,0 +1,39 @@
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  font-size: 14px;
+}
+
+.task-table th,
+.task-table td {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.task-table thead {
+  background-color: var(--color-principal-suave);
+  color: var(--color-texto);
+}
+
+.btn {
+  padding: 6px 12px;
+  background-color: var(--color-principal);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #388e3c;
+}
+
+.btn-action {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}

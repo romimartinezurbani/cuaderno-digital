@@ -1,0 +1,15 @@
+.task-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.task-filters select {
+  padding: 0.5rem;
+  border: 1px solid var(--gris-claro);
+  border-radius: 8px;
+  background-color: var(--blanco);
+  color: var(--gris-oscuro);
+  font-size: 1rem;
+}
+
