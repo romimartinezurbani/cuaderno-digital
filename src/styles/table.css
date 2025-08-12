@@ -3,6 +3,7 @@
   border-collapse: collapse;
   background-color: white;
   font-size: 14px;
+  overflow-x: auto;
 }
 
 .task-table th,
@@ -37,3 +38,32 @@
   cursor: pointer;
   font-size: 16px;
 }
+
+/* ========================
+   RESPONSIVE STYLES
+   ======================== */
+@media (max-width: 768px) {
+  .task-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 0;
+  }
+
+  .task-table thead {
+    display: table-header-group;
+  }
+
+  .task-table tr {
+    display: table-row;
+  }
+
+  .task-table th,
+  .task-table td {
+    white-space: nowrap;
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+}
+

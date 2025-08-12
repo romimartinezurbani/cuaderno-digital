@@ -1,40 +1,35 @@
-import React, { useState } from 'react';
+// src/App.jsx
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
 import TaskForm from './components/TaskForm';
 import TaskTable from './components/TaskTable';
 import BillingDashboard from './components/BillingDashboard';
-import './styles/table.css'; // Asegúrate de que este import esté para usar .btn
+import './styles/table.css';
 
-function App() {
-  const [pantalla, setPantalla] = useState('tareas');
-
+const App = () => {
   return (
-    <div>
-      <nav style={{ margin: '1rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-        <button
-          className="btn"
-          onClick={() => setPantalla('tareas')}
-        >
-          Tareas
-        </button>
-        <button
-          className="btn"
-          onClick={() => setPantalla('facturacion')}
-        >
-          Facturación
-        </button>
-      </nav>
-
-      {pantalla === 'tareas' && (
-        <>
-          <TaskForm />
-          <TaskTable />
-        </>
-      )}
-
-      {pantalla === 'facturacion' && <BillingDashboard />}
-    </div>
+    <Router>
+      <Navbar />
+      <div className="main-container">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <TaskForm />
+                <TaskTable />
+              </>
+            }
+          />
+          <Route path="/facturacion" element={<BillingDashboard />} />
+          <Route path="/admin" element={<div>Configuración de usuarios (en construcción)</div>} />
+        </Routes>
+      </div>
+    </Router>
   );
-}
+};
 
 export default App;
+
 
