@@ -65,7 +65,7 @@ const TaskForm = () => {
     <form className="task-form" onSubmit={handleSubmit}>
       <h2>Registrar tarea</h2>
 
-      <div className="form-group">
+        <div className="form-group">
         <label>Fecha:</label>
         <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} required />
       </div>

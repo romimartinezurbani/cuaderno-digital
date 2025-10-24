@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import TaskFilters from './TaskFilters';
+import TaskFilters from '../components/TaskFilters';
 import EditTaskModal from './EditTaskModal';
 import '../styles/table.css';
 import * as XLSX from 'xlsx';

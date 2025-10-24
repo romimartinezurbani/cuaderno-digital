@@ -1,14 +1,25 @@
-// src/pages/Home.jsx
 import React from 'react';
-import TaskForm from '../components/TaskForm';
+import { useNavigate } from 'react-router-dom';
+import '../styles/Home.css'
 
-const Home = () => {
+
+function Home() {
+  const navigate = useNavigate();
+
   return (
-    <main style={{ padding: '2rem' }}>
-      <h1>Cuaderno Digital</h1>
-      <TaskForm />
-    </main>
+    <div className="home-container">
+      <h1 className="home-title">Bienvenido a tu Cuaderno Digital</h1>
+      <p className="home-subtitle">
+        Organizá tus tareas, controlá tu facturación y gestioná todo desde un solo lugar.
+      </p>
+      <div className="home-buttons">
+        <button onClick={() => navigate('/tareas')}>Ir a Tareas</button>
+        <button onClick={() => navigate('/facturacion')}>Ver Facturación</button>
+      </div>
+    </div>
   );
-};
+}
 
 export default Home;
+
+

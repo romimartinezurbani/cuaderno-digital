@@ -1,35 +1,79 @@
-// src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import TaskForm from './components/TaskForm';
-import TaskTable from './components/TaskTable';
-import BillingDashboard from './components/BillingDashboard';
-import './styles/table.css';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ProtectedRoute from './components/ProtectedRoute';
 
-const App = () => {
+import Tareas from './modules/tareas';
+import Facturacion from './modules/facturacion';
+import Admin from './modules/administracion/Admin';
+
+import { AuthProvider } from './context/AuthContext';
+
+function App() {
   return (
-    <Router>
-      <Navbar />
-      <div className="main-container">
+    <AuthProvider>
+      <Router>
+        <Navbar />
         <Routes>
+          {/* Página de inicio */}
+          <Route path="/" element={<Home />} />
+
+          {/* Autenticación */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          {/* Rutas protegidas */}
           <Route
-            path="/"
+            path="/tareas"
             element={
-              <>
-                <TaskForm />
-                <TaskTable />
-              </>
+              <ProtectedRoute modulo="tareas">
+                <Tareas />
+              </ProtectedRoute>
             }
           />
-          <Route path="/facturacion" element={<BillingDashboard />} />
-          <Route path="/admin" element={<div>Configuración de usuarios (en construcción)</div>} />
+
+          <Route
+            path="/facturacion"
+            element={
+              <ProtectedRoute modulo="facturacion">
+                <Facturacion />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Panel administrativo (dos rutas válidas) */}
+          <Route
+            path="/administracion"
+            element={
+              <ProtectedRoute modulo="administracion">
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute modulo="administracion">
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Ruta 404 opcional */}
+          <Route path="*" element={<h2 style={{ textAlign: 'center', marginTop: '2rem' }}>Página no encontrada</h2>} />
         </Routes>
-      </div>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
-};
+}
 
 export default App;
+
+
+
 
 

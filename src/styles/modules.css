@@ -1,0 +1,23 @@
+.section-title {
+  color: var(--color-principal);
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.tareas-container,
+.facturacion-container,
+.admin-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 1rem;
+}
+
+.admin-placeholder {
+  margin-top: 2rem;
+  text-align: center;
+  background: #f4f4f4;
+  padding: 2rem;
+  border-radius: 8px;
+  font-style: italic;
+  color: #555;
+}

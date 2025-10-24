@@ -1,51 +1,79 @@
-/* src/styles/navbar.css */
 .navbar {
+  position: fixed;         
+  top: 0;
+  left: 0;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   background-color: var(--color-principal);
   padding: 0.8rem 1.5rem;
   color: white;
-  position: relative;
   flex-wrap: wrap;
+  z-index: 1000;                
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+body {
+  padding-top: 70px; 
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .navbar-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  height: 45px;
+  width: auto;
+  object-fit: contain;
 }
 
-.navbar-logo img {
-  height: 40px;
-}
-
+/* Botón hamburguesa */
 .navbar-toggle {
   display: none;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   background: none;
   color: white;
   border: none;
   cursor: pointer;
 }
 
+/* Enlaces */
 .navbar-links {
   display: flex;
-  gap: 1rem;
+  gap: 1.2rem;
 }
 
 .navbar-links a {
   color: white;
   text-decoration: none;
-  padding: 0.4rem 0.6rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 4px;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s ease;
 }
 
 .navbar-links a:hover,
 .navbar-links a.active {
   background-color: white;
   color: var(--color-principal);
+}
+
+/* Botón derecho */
+.navbar-right .btn {
+  background-color: white;
+  color: var(--color-principal);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.navbar-right .btn:hover {
+  background-color: #e8f5e9;
 }
 
 /* RESPONSIVE */
@@ -58,8 +86,9 @@
     display: none;
     flex-direction: column;
     width: 100%;
-    margin-top: 1rem;
     background-color: var(--color-principal);
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
   }
 
   .navbar-links.abierto {
@@ -70,4 +99,22 @@
     padding: 0.8rem;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
   }
+
+  .navbar-right {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
 }
+
+.navbar-logo-img {
+  height: 55px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.navbar-logo-img:hover {
+  transform: scale(1.05);
+}
+
