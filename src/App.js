@@ -5,7 +5,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
-
+import ClientesView from './modules/clientes/ClientesView';
 import Tareas from './modules/tareas';
 import Facturacion from './modules/facturacion';
 import Admin from './modules/administracion/Admin';
@@ -34,6 +34,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route 
+            path="/clientes" 
+            element={
+            <ProtectedRoute modulo="Clientes">
+              <ClientesView />
+            </ProtectedRoute>
+            }
+            />
+
 
           <Route
             path="/facturacion"

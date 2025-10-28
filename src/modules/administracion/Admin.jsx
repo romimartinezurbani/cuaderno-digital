@@ -32,6 +32,26 @@ const Admin = () => {
     obtenerUsuarios();
   };
 
+  // 🔹 Editar columnas visibles por módulo
+  const editarColumnas = async (id, modulo) => {
+    const columnasActuales =
+      usuarios.find((u) => u.id === id)?.columnas?.[modulo]?.join(", ") || "";
+    const columnas = prompt(
+      `Ingresá las columnas visibles para el módulo "${modulo}" (separadas por coma):`,
+      columnasActuales
+    );
+    if (!columnas) return;
+
+    const userRef = doc(db, "usuarios", id);
+    await updateDoc(userRef, {
+      [`columnas.${modulo}`]: columnas
+        .split(",")
+        .map((c) => c.trim())
+        .filter((c) => c !== ""),
+    });
+    obtenerUsuarios();
+  };
+
   useEffect(() => {
     obtenerUsuarios();
   }, []);
@@ -39,7 +59,7 @@ const Admin = () => {
   return (
     <div className="admin-container">
       <h2>Panel de Administración</h2>
-      <p>Gestioná los accesos de los usuarios al sistema.</p>
+      <p>Gestioná los accesos y columnas visibles de cada usuario.</p>
 
       <table className="admin-table">
         <thead>
@@ -47,9 +67,11 @@ const Admin = () => {
             <th>Nombre</th>
             <th>Email</th>
             <th>Rol</th>
+            <th>Clientes</th>
             <th>Tareas</th>
             <th>Facturación</th>
             <th>Administración</th>
+            <th>Configurar columnas</th>
             <th>Aprobado</th>
           </tr>
         </thead>
@@ -59,6 +81,17 @@ const Admin = () => {
               <td>{user.nombre || "—"}</td>
               <td>{user.email}</td>
               <td>{user.rol}</td>
+
+              {/* 🔹 Módulos habilitados */}
+              <td>
+                <input
+                  type="checkbox"
+                  checked={user.modulos?.clientes || false}
+                  onChange={() =>
+                    toggleModulo(user.id, "clientes", user.modulos?.clientes)
+                  }
+                />
+              </td>
               <td>
                 <input
                   type="checkbox"
@@ -86,6 +119,26 @@ const Admin = () => {
                   }
                 />
               </td>
+
+              {/* 🔹 Configurar columnas */}
+              <td>
+                <div className="column-config">
+                  <button
+                    className="btn-config"
+                    onClick={() => editarColumnas(user.id, "tareas")}
+                  >
+                    ⚙️ Tareas
+                  </button>
+                  <button
+                    className="btn-config"
+                    onClick={() => editarColumnas(user.id, "facturacion")}
+                  >
+                    ⚙️ Facturación
+                  </button>
+                </div>
+              </td>
+
+              {/* 🔹 Aprobar usuario */}
               <td>
                 {user.rol === "pendiente" ? (
                   <button
@@ -107,6 +160,7 @@ const Admin = () => {
 };
 
 export default Admin;
+
 
 
 

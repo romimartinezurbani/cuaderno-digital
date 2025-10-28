@@ -1,4 +1,3 @@
-// src/components/BillingDashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -104,12 +103,9 @@ const BillingDashboard = () => {
     <div>
       <BillingForm onFacturaAgregada={fetchInvoices} />
 
-      <div className="task-table-container" style={{ padding: '2rem' }}>
-        <h2 style={{ color: 'var(--color-principal)', marginBottom: '1rem' }}>Facturas registradas</h2>
-
-        <div className="filtros-container" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
-          <div className="form-group">
-            <label>Cliente</label>
+      <div className="table-container">
+        <div className="table-header">
+          <div className="filters">
             <select value={filtroCliente} onChange={e => setFiltroCliente(e.target.value)}>
               <option value="">Todos los clientes</option>
               {clientesUnicos.map((c, i) => (
@@ -118,10 +114,7 @@ const BillingDashboard = () => {
                 </option>
               ))}
             </select>
-          </div>
 
-          <div className="form-group">
-            <label>Estado</label>
             <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}>
               <option value="">Todos los estados</option>
               <option value="pendiente">Pendiente</option>
@@ -129,11 +122,13 @@ const BillingDashboard = () => {
             </select>
           </div>
 
-          <button className="btn" onClick={exportarExcel}>📊 Exportar a Excel</button>
-          <button className="btn" onClick={exportarPDF}>📄 Exportar a PDF</button>
+          <div className="export-buttons">
+            <button onClick={exportarExcel}>📊 Excel</button>
+            <button onClick={exportarPDF}>📄 PDF</button>
+          </div>
         </div>
 
-        <table className="task-table">
+        <table className="data-table">
           <thead>
             <tr>
               <th>N° Factura</th>
@@ -169,8 +164,8 @@ const BillingDashboard = () => {
                         </select>
                       </td>
                       <td>
-                        <button onClick={handleGuardarEdicion}>💾</button>
-                        <button onClick={() => setEditandoId(null)}>✖</button>
+                        <button className="btn-action" onClick={handleGuardarEdicion}>💾</button>
+                        <button className="btn-action" onClick={() => setEditandoId(null)}>✖</button>
                       </td>
                     </>
                   ) : (
@@ -183,8 +178,8 @@ const BillingDashboard = () => {
                       <td>{f.tareaId}</td>
                       <td>{f.estado === 'cobrado' ? 'Cobrado' : 'Pendiente'}</td>
                       <td>
-                        <button onClick={() => handleEditar(f)}>✏️</button>
-                        <button onClick={() => handleEliminar(f.id)}>🗑️</button>
+                        <button className="btn-action" onClick={() => handleEditar(f)}>✏️</button>
+                        <button className="btn-action" onClick={() => handleEliminar(f.id)}>🗑️</button>
                       </td>
                     </>
                   )}
@@ -199,5 +194,6 @@ const BillingDashboard = () => {
 };
 
 export default BillingDashboard;
+
 
 

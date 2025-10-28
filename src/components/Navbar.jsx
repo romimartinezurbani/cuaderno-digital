@@ -33,6 +33,7 @@ const Navbar = () => {
       {/* Enlaces */}
       {currentUser && (
         <div className={`navbar-links ${menuAbierto ? 'abierto' : ''}`}>
+          <Link to="/clientes" onClick={() => setMenuAbierto(false)}>Clientes</Link>
           <Link to="/tareas" onClick={() => setMenuAbierto(false)}>Tareas</Link>
           <Link to="/facturacion" onClick={() => setMenuAbierto(false)}>Facturación</Link>
           <Link to="/admin" onClick={() => setMenuAbierto(false)}>Administración</Link>
