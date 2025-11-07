@@ -1,25 +1,35 @@
-import React, { useEffect, useState } from "react";
-import { collection, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import React, { useEffect, useState, useCallback } from "react";
+import { collection, getDocs, deleteDoc, doc, updateDoc, query, where } from "firebase/firestore";
 import { db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
 import "../styles/table.css";
 
 const ClienteTable = () => {
   const [clientes, setClientes] = useState([]);
   const [editId, setEditId] = useState(null);
   const [editedData, setEditedData] = useState({});
+  const { userData, currentUser } = useAuth();
 
-  const fetchClientes = async () => {
-    const querySnapshot = await getDocs(collection(db, "clientes"));
+  // ✅ Envolvemos la función en useCallback para evitar advertencias y dependencias erróneas
+  const fetchClientes = useCallback(async () => {
+    if (!currentUser) return;
+
+    const q = query(collection(db, "clientes"), where("creadoPor", "==", currentUser.uid));
+    const querySnapshot = await getDocs(q);
     const data = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
     setClientes(data);
-  };
+  }, [currentUser]);
 
   useEffect(() => {
     fetchClientes();
-  }, []);
+  }, [fetchClientes]); // ✅ ahora la dependencia está bien manejada
+
+  if (!userData?.modulos?.clientes) return null;
+
+  const columnasVisibles = userData?.columnas?.clientes || [];
 
   const handleDelete = async (id) => {
     if (window.confirm("¿Desea eliminar este cliente?")) {
@@ -44,6 +54,21 @@ const ClienteTable = () => {
     fetchClientes();
   };
 
+  const renderCelda = (cliente, campo) => {
+    if (editId === cliente.id) {
+      return (
+        <td>
+          <input
+            name={campo}
+            value={editedData[campo] || ""}
+            onChange={handleChange}
+          />
+        </td>
+      );
+    }
+    return <td>{cliente[campo]}</td>;
+  };
+
   return (
     <div className="table-container">
       <div className="table-header">
@@ -53,45 +78,37 @@ const ClienteTable = () => {
       <table className="data-table">
         <thead>
           <tr>
-            <th>Nombre</th>
-            <th>N° Cliente</th>
-            <th>CUIT</th>
-            <th>Razón Social</th>
-            <th>Condición IVA</th>
-            <th>Domicilio</th>
+            {columnasVisibles.includes("nombre") && <th>Nombre</th>}
+            {columnasVisibles.includes("nroCliente") && <th>N° Cliente</th>}
+            {columnasVisibles.includes("cuit") && <th>CUIT</th>}
+            {columnasVisibles.includes("razonsocial") && <th>Razón Social</th>}
+            {columnasVisibles.includes("condicionIva") && <th>Condición IVA</th>}
+            {columnasVisibles.includes("domicilio") && <th>Domicilio</th>}
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {clientes.map((cliente) => (
             <tr key={cliente.id}>
-              {editId === cliente.id ? (
-                <>
-                  <td><input name="nombre" value={editedData.nombre} onChange={handleChange} /></td>
-                  <td><input name="nroCliente" value={editedData.nroCliente} onChange={handleChange} /></td>
-                  <td><input name="cuit" value={editedData.cuit} onChange={handleChange} /></td>
-                  <td><input name="razonsocial" value={editedData.razonsocial} onChange={handleChange} /></td>
-                  <td><input name="condicionIva" value={editedData.condicionIva} onChange={handleChange} /></td>
-                  <td><input name="domicilio" value={editedData.domicilio} onChange={handleChange} /></td>
-                  <td>
+              {columnasVisibles.includes("nombre") && renderCelda(cliente, "nombre")}
+              {columnasVisibles.includes("nroCliente") && renderCelda(cliente, "nroCliente")}
+              {columnasVisibles.includes("cuit") && renderCelda(cliente, "cuit")}
+              {columnasVisibles.includes("razonsocial") && renderCelda(cliente, "razonsocial")}
+              {columnasVisibles.includes("condicionIva") && renderCelda(cliente, "condicionIva")}
+              {columnasVisibles.includes("domicilio") && renderCelda(cliente, "domicilio")}
+              <td>
+                {editId === cliente.id ? (
+                  <>
                     <button className="btn-action" onClick={() => handleSave(cliente.id)}>💾</button>
                     <button className="btn-action" onClick={() => setEditId(null)}>❌</button>
-                  </td>
-                </>
-              ) : (
-                <>
-                  <td>{cliente.nombre}</td>
-                  <td>{cliente.nroCliente}</td>
-                  <td>{cliente.cuit}</td>
-                  <td>{cliente.razonsocial}</td>
-                  <td>{cliente.condicionIva}</td>
-                  <td>{cliente.domicilio}</td>
-                  <td>
+                  </>
+                ) : (
+                  <>
                     <button className="btn-action" onClick={() => handleEdit(cliente)}>✏️</button>
                     <button className="btn-action" onClick={() => handleDelete(cliente.id)}>🗑️</button>
-                  </td>
-                </>
-              )}
+                  </>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -101,4 +118,6 @@ const ClienteTable = () => {
 };
 
 export default ClienteTable;
+
+
 

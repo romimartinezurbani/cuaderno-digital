@@ -38,7 +38,7 @@ function App() {
           <Route 
             path="/clientes" 
             element={
-            <ProtectedRoute modulo="Clientes">
+            <ProtectedRoute modulo="clientes">
               <ClientesView />
             </ProtectedRoute>
             }

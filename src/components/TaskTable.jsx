@@ -1,119 +1,139 @@
-import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase';
-import TaskFilters from '../components/TaskFilters';
-import EditTaskModal from './EditTaskModal';
-import '../styles/table.css';
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import React, { useState, useEffect } from "react";
+import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { db } from "../firebase";
+import TaskFilters from "../components/TaskFilters";
+import EditTaskModal from "./EditTaskModal";
+import "../styles/table.css";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
-const TaskTable = () => {
+const TaskTable = ({ permisos }) => {
   const [tasks, setTasks] = useState([]);
-  const [filters, setFilters] = useState({ cliente: '', tarea: '' });
+  const [filters, setFilters] = useState({ cliente: "", tarea: "" });
   const [taskToEdit, setTaskToEdit] = useState(null);
 
+  // ✅ columnas visibles según el panel de administración o por defecto
+  const [visibleCols, setVisibleCols] = useState(
+    permisos?.tareas?.columnas || {
+      fecha: true,
+      grupoEmpresarial: true,
+      cliente: true,
+      nroCliente: true,
+      cuit: true,
+      razonsocial: true,
+      condicionIva: true,
+      domicilio: true,
+      tarea: true,
+      estancia: true,
+      provincia: true,
+      localidad: true,
+      hectareas: true,
+      usdPorHa: true,
+      ingenieroContacto: true,
+      coadyudante: true,
+      retencionHabitual: true,
+      totalCobrar: true,
+      observaciones: true,
+    }
+  );
+
+  // 🔄 Cargar tareas desde Firestore
   useEffect(() => {
     const fetchTasks = async () => {
-      const querySnapshot = await getDocs(collection(db, 'tareas'));
-      const fetchedTasks = querySnapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(task => !task.eliminado);
-      setTasks(fetchedTasks);
+      try {
+        const querySnapshot = await getDocs(collection(db, "tareas"));
+        const fetchedTasks = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter((task) => !task.eliminado);
+        setTasks(fetchedTasks);
+      } catch (error) {
+        console.error("Error al obtener tareas:", error);
+      }
     };
     fetchTasks();
   }, []);
 
+  // 🔄 Actualizar columnas si cambian los permisos
+  useEffect(() => {
+    if (permisos?.tareas?.columnas) {
+      setVisibleCols(permisos.tareas.columnas);
+    }
+  }, [permisos]);
+
+  // 🔍 Filtrado básico
+  const filteredTasks = tasks.filter((task) => {
+    const clienteMatch =
+      !filters.cliente ||
+      (task.cliente && task.cliente.toLowerCase().includes(filters.cliente.toLowerCase()));
+    const tareaMatch =
+      !filters.tarea ||
+      (task.tarea && task.tarea.toLowerCase().includes(filters.tarea.toLowerCase()));
+    return clienteMatch && tareaMatch;
+  });
+
+  // ✏️ Editar tarea
   const handleEditClick = (task) => setTaskToEdit(task);
 
   const handleSaveTask = async (updatedTask) => {
-    await updateDoc(doc(db, 'tareas', updatedTask.id), updatedTask);
-    setTasks(prev =>
-      prev.map(task => (task.id === updatedTask.id ? updatedTask : task))
+    await updateDoc(doc(db, "tareas", updatedTask.id), updatedTask);
+    setTasks((prev) =>
+      prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
     );
     setTaskToEdit(null);
   };
 
+  // 🗑️ Eliminar (soft delete)
   const handleDeleteClick = async (taskId) => {
-    const confirm = window.confirm('¿Estás seguro que querés eliminar esta tarea?');
-    if (!confirm) return;
-    await updateDoc(doc(db, 'tareas', taskId), { eliminado: true });
-    setTasks(prev => prev.filter(task => task.id !== taskId));
+    if (!window.confirm("¿Estás seguro que querés eliminar esta tarea?")) return;
+    await updateDoc(doc(db, "tareas", taskId), { eliminado: true });
+    setTasks((prev) => prev.filter((task) => task.id !== taskId));
   };
 
-  const filteredTasks = tasks.filter(task => {
-    const clienteMatch = filters.cliente === '' || task.cliente === filters.cliente;
-    const tareaMatch = filters.tarea === '' || task.tarea === filters.tarea;
-    return clienteMatch && tareaMatch;
-  });
-
+  // 📤 Exportar Excel
   const exportToExcel = (data) => {
     const worksheet = XLSX.utils.json_to_sheet(
-      data.map(task => ({
-        Fecha: task.fecha,
-        'Grupo Empresarial': task.grupoEmpresarial,
-        Cliente: task.cliente,
-        'N° Cliente': task.nroCliente,
-        CUIT: task.cuit || '',
-        'Razón Social': task.razonsocial,
-        'Condición IVA': task.condicionIva,
-        Domicilio: task.domicilio,
-        Estancia: task.estancia,
-        Provincia: task.provincia,
-        Localidad: task.localidad,
-        'Ingeniero Contacto': task.ingenieroContacto,
-        Coadyudante: task.coadyudante,
-        'Retención Habitual (%)': task.retencionHabitual,
-        Tarea: task.tarea,
-        Hectáreas: task.hectareas,
-        'USD/ha': task.usdPorHa,
-        'Total USD': task.totalCobrar || (task.hectareas * task.usdPorHa).toFixed(2),
-        Observaciones: task.observaciones,
-        Facturado: task.facturado ? '✔' : '✘',
-        Cobrado: task.cobrado ? '✔' : '✘',
-      }))
+      data.map((task) => {
+        const row = {};
+        Object.entries(visibleCols).forEach(([key, visible]) => {
+          if (visible) row[key] = task[key] || "";
+        });
+        return row;
+      })
     );
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Tareas');
-    XLSX.writeFile(workbook, 'reporte_tareas.xlsx');
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tareas");
+    XLSX.writeFile(workbook, "reporte_tareas.xlsx");
   };
 
+  // 📄 Exportar PDF
   const exportToPDF = (data) => {
     const doc = new jsPDF();
-    doc.text('Reporte de Tareas', 14, 16);
-    const tableData = data.map(task => [
-      task.fecha,
-      task.grupoEmpresarial,
-      task.cliente,
-      task.nroCliente,
-      task.cuit || '',
-      task.razonsocial,
-      task.condicionIva,
-      task.domicilio,
-      task.estancia,
-      task.provincia,
-      task.localidad,
-      task.ingenieroContacto,
-      task.coadyudante,
-      task.retencionHabitual,
-      task.tarea,
-      task.hectareas,
-      task.usdPorHa,
-      task.totalCobrar || (task.hectareas * task.usdPorHa).toFixed(2),
-      task.observaciones,
-      task.facturado ? '✔' : '✘',
-      task.cobrado ? '✔' : '✘',
-    ]);
+    doc.text("Reporte de Tareas", 14, 16);
+
+    const headers = [];
+    const headerMap = [];
+
+    Object.entries(visibleCols).forEach(([key, visible]) => {
+      if (visible) {
+        headers.push(key);
+        headerMap.push(key);
+      }
+    });
+
+    const tableData = data.map((task) => headerMap.map((field) => task[field] || ""));
+
     autoTable(doc, {
       startY: 20,
-      head: [['Fecha', 'Grupo Empresarial', 'Cliente', 'N° Cliente', 'CUIT', 'Razón Social', 'Condición IVA', 'Domicilio', 'Estancia', 'Provincia', 'Localidad', 'Ing. Contacto', 'Coadyudante', 'Retención (%)', 'Tarea', 'Ha', 'USD/ha', 'Total USD', 'Obs', 'Facturado', 'Cobrado']],
+      head: [headers],
       body: tableData,
-      styles: { fontSize: 6 },
-      theme: 'grid',
+      styles: { fontSize: 7 },
+      theme: "grid",
     });
-    doc.save('reporte_tareas.pdf');
+    doc.save("reporte_tareas.pdf");
   };
 
+  // 🧩 Render
   return (
     <div className="table-container">
       <div className="table-header">
@@ -127,60 +147,37 @@ const TaskTable = () => {
       <table className="data-table">
         <thead>
           <tr>
-            <th>Fecha</th>
-            <th>Grupo Empresarial</th>
-            <th>Cliente</th>
-            <th>N° Cliente</th>
-            <th>CUIT</th>
-            <th>Razón Social</th>
-            <th>Condición IVA</th>
-            <th>Domicilio</th>
-            <th>Estancia</th>
-            <th>Provincia</th>
-            <th>Localidad</th>
-            <th>Ing. Contacto</th>
-            <th>Coadyudante</th>
-            <th>Retención (%)</th>
-            <th>Tarea</th>
-            <th>Ha</th>
-            <th>USD/ha</th>
-            <th>Total USD</th>
-            <th>Observaciones</th>
-            <th>Facturado</th>
-            <th>Cobrado</th>
+            {Object.entries(visibleCols)
+              .filter(([_, visible]) => visible)
+              .map(([col]) => (
+                <th key={col}>{col}</th>
+              ))}
             <th>Acciones</th>
           </tr>
         </thead>
+
         <tbody>
-          {filteredTasks.map((task) => (
-            <tr key={task.id}>
-              <td>{task.fecha}</td>
-              <td>{task.grupoEmpresarial}</td>
-              <td>{task.cliente}</td>
-              <td>{task.nroCliente}</td>
-              <td>{task.cuit}</td>
-              <td>{task.razonsocial}</td>
-              <td>{task.condicionIva}</td>
-              <td>{task.domicilio}</td>
-              <td>{task.estancia}</td>
-              <td>{task.provincia}</td>
-              <td>{task.localidad}</td>
-              <td>{task.ingenieroContacto}</td>
-              <td>{task.coadyudante}</td>
-              <td>{task.retencionHabitual}</td>
-              <td>{task.tarea}</td>
-              <td>{task.hectareas}</td>
-              <td>{task.usdPorHa}</td>
-              <td>{task.totalCobrar || (task.hectareas * task.usdPorHa).toFixed(2)}</td>
-              <td>{task.observaciones}</td>
-              <td>{task.facturado ? '✔' : '✘'}</td>
-              <td>{task.cobrado ? '✔' : '✘'}</td>
-              <td>
-                <button className="btn-action" onClick={() => handleEditClick(task)}>✏️</button>
-                <button className="btn-action" onClick={() => handleDeleteClick(task.id)}>🗑️</button>
+          {filteredTasks.length > 0 ? (
+            filteredTasks.map((task) => (
+              <tr key={task.id}>
+                {Object.entries(visibleCols)
+                  .filter(([_, visible]) => visible)
+                  .map(([col]) => (
+                    <td key={col}>{task[col] || ""}</td>
+                  ))}
+                <td>
+                  <button className="btn-action" onClick={() => handleEditClick(task)}>✏️</button>
+                  <button className="btn-action" onClick={() => handleDeleteClick(task.id)}>🗑️</button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={Object.keys(visibleCols).length + 1} style={{ textAlign: "center" }}>
+                No hay tareas registradas
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
@@ -196,6 +193,10 @@ const TaskTable = () => {
 };
 
 export default TaskTable;
+
+
+
+
 
 
 
