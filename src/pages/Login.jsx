@@ -1,7 +1,7 @@
 import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase"; // Asegurate de tener configurado tu archivo firebase.js
-import { useNavigate } from "react-router-dom";
+import { auth } from "../firebase";
 import "../styles/login.css";
 
 const Login = () => {
@@ -60,10 +60,11 @@ const Login = () => {
 
         <div className="login-footer">
           ¿No tenés cuenta?{" "}
-          <a href="#" onClick={() => navigate("/register")}>
+          <Link to="/register" className="login-link">
             Crear cuenta
-          </a>
+          </Link>
         </div>
+
       </div>
     </div>
   );
