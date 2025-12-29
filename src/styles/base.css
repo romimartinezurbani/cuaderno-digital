@@ -1,0 +1,258 @@
+/* =====================================================
+   BASE SYSTEM – CUADERNO DIGITAL
+   ===================================================== */
+
+/* -------- Variables -------- */
+:root {
+  --color-primary: #52683d;
+  --color-primary-soft: #6f8550;
+  --color-bg: #f4f6f1;
+  --color-bg-soft: #f7f9f4;
+  --color-text: #2f2f2f;
+  --color-muted: #666;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+
+  --shadow-sm: 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+
+  --max-width: 1100px;
+}
+
+/* -------- Reset base -------- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+/* -------- Layout -------- */
+.base-page {
+  width: 100%;
+}
+
+.base-container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* -------- Header -------- */
+.base-header {
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.base-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 72px;
+}
+
+.base-logo {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--color-primary);
+}
+
+/* -------- Hero -------- */
+.base-hero {
+  padding: 5rem 0 4rem;
+  color: #fff;
+  background-size: cover;
+  background-position: center;
+}
+
+.base-hero-light {
+  background: linear-gradient(135deg, #e7ecdf, #f4f6f1);
+  color: var(--color-text);
+}
+
+.base-hero-content {
+  text-align: center;
+}
+
+.base-hero-title {
+  font-size: 2.6rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.base-hero-subtitle {
+  font-size: 1.15rem;
+  max-width: 760px;
+  margin: 0 auto 2rem;
+  color: rgba(255,255,255,0.9);
+}
+
+.base-hero-light .base-hero-subtitle {
+  color: var(--color-muted);
+}
+
+/* -------- Sections -------- */
+.base-section {
+  padding: 4rem 0;
+}
+
+.base-muted {
+  background: var(--color-bg-soft);
+}
+
+.base-highlight {
+  background: linear-gradient(180deg, #ffffff 0%, #f3f7ee 100%);
+}
+
+/* -------- Typography -------- */
+.base-title {
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 0.8rem;
+}
+
+.base-subtitle {
+  color: var(--color-muted);
+  max-width: 720px;
+  margin-bottom: 2.5rem;
+}
+
+/* -------- Grid -------- */
+.base-grid {
+  display: grid;
+  gap: 2rem;
+}
+
+.base-grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* -------- Cards -------- */
+.base-card {
+  background: #fff;
+  padding: 2rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.base-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.base-card h3 {
+  margin-top: 0;
+  color: var(--color-primary);
+}
+
+.base-card-pro {
+  border: 2px solid var(--color-primary-soft);
+}
+
+/* -------- Icons -------- */
+.base-icon {
+  color: var(--color-primary-soft);
+  margin-bottom: 0.6rem;
+}
+
+/* -------- Images -------- */
+.base-image {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* -------- Lists -------- */
+.base-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+}
+
+.base-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+/* -------- Buttons -------- */
+.base-btn {
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.75rem 1.6rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+}
+
+.base-btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.base-btn-primary:hover {
+  background: #435531;
+}
+
+.base-btn-secondary {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.4);
+}
+
+.base-btn-outline {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.base-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* -------- CTA -------- */
+.base-cta {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-soft));
+  color: #fff;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.base-cta-soft {
+  background: linear-gradient(135deg, #52683d, #6f8550);
+  color: #fff;
+  padding: 3rem 2rem;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  margin: 4rem auto;
+}
+
+/* -------- Responsive -------- */
+@media (max-width: 768px) {
+  .base-hero-title {
+    font-size: 2.1rem;
+  }
+
+  .base-section {
+    padding: 3rem 0;
+  }
+}

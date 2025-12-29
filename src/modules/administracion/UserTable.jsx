@@ -1,54 +1,80 @@
 import React from "react";
 import "../../styles/admin.css";
 
-const UserTable = ({ usuarios, actualizarEstado }) => {
+const UserTable = ({
+  usuarios,
+  onToggleModulo,
+  onAprobarUsuario,
+  onConfigurarColumnas,
+}) => {
   return (
-    <div className="user-table-container">
-      <table className="user-table">
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Nombre</th>
-            <th>Fecha de registro</th>
-            <th>Estado</th>
-            <th>Acciones</th>
+    <table className="admin-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Tareas</th>
+          <th>Facturación</th>
+          <th>Clientes</th>
+          <th>Gastos</th>
+          <th>Administración</th>
+          <th>Configurar columnas</th>
+          <th>Aprobado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {usuarios.map((user) => (
+          <tr key={user.id}>
+            <td>{user.nombre || "—"}</td>
+            <td>{user.email}</td>
+            <td>{user.rol}</td>
+
+            {["tareas", "facturacion", "clientes", "gastos", "administracion"].map(
+                (mod) => (
+                  <td key={mod}>
+                    <input
+                      type="checkbox"
+                      checked={!!user.modulos?.[mod]}
+                      onChange={() => onToggleModulo(user, mod)}
+                    />
+                  </td>
+                )
+              )}
+
+            <td>
+              <div className="column-config">
+                {["tareas", "facturacion", "gastos", "clientes"].map((mod) => (
+                  <button
+                    key={mod}
+                    className="btn-config"
+                    onClick={() => onConfigurarColumnas(user, mod)}
+                  >
+                    ⚙️ {mod}
+                  </button>
+                ))}
+              </div>
+            </td>
+
+            <td>
+              {user.rol === "pendiente" ? (
+                <button
+                  className="btn-approve"
+                  onClick={() => onAprobarUsuario(user.id)}
+                >
+                  Aprobar
+                </button>
+              ) : (
+                <span className="aprobado">✔</span>
+              )}
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {usuarios.map((user) => (
-            <tr key={user.id}>
-              <td>{user.email}</td>
-              <td>{user.nombre || "—"}</td>
-              <td>
-                {user.fechaCreacion
-                  ? new Date(user.fechaCreacion.seconds * 1000).toLocaleDateString()
-                  : "—"}
-              </td>
-              <td className={`estado-${user.estado}`}>{user.estado}</td>
-              <td>
-                {user.estado === "pendiente" ? (
-                  <button
-                    onClick={() => actualizarEstado(user.id, "activo")}
-                    className="btn-aprobar"
-                  >
-                    Aprobar
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => actualizarEstado(user.id, "pendiente")}
-                    className="btn-bloquear"
-                  >
-                    Bloquear
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </table>
   );
 };
 
 export default UserTable;
+
 
