@@ -16,7 +16,7 @@ const UserTable = ({
           <th>Rol</th>
           <th>Tareas</th>
           <th>Facturación</th>
-          <th>Clientes</th>
+          <th>Contactos</th>
           <th>Gastos</th>
           <th>Administración</th>
           <th>Configurar columnas</th>
@@ -30,7 +30,7 @@ const UserTable = ({
             <td>{user.email}</td>
             <td>{user.rol}</td>
 
-            {["tareas", "facturacion", "clientes", "gastos", "administracion"].map(
+            {["tareas", "facturacion", "contactos", "gastos", "administracion"].map(
                 (mod) => (
                   <td key={mod}>
                     <input
@@ -44,7 +44,7 @@ const UserTable = ({
 
             <td>
               <div className="column-config">
-                {["tareas", "facturacion", "gastos", "clientes"].map((mod) => (
+                {["tareas", "facturacion", "gastos", "contactos"].map((mod) => (
                   <button
                     key={mod}
                     className="btn-config"

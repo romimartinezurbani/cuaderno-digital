@@ -1,12 +1,19 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../firebase";
 import {
-  onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  onAuthStateChanged,
 } from "firebase/auth";
-import { doc, setDoc, onSnapshot } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  addDoc,
+  collection,
+  onSnapshot,
+  serverTimestamp,
+} from "firebase/firestore";
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
@@ -16,91 +23,84 @@ export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🧠 Registrar nuevo usuario
-  const signup = async (email, password, nombre) => {
+  // 🧠 REGISTRO
+  const signup = async ({ email, password, nombre, empresa }) => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
-    const userRef = doc(db, "usuarios", cred.user.uid);
 
-    await setDoc(userRef, {
-      email,
-      nombre,
-      rol: "pendiente",
-      empresaId: null,
-      modulos: {
-        tareas: false,
-        facturacion: false,
-        clientes: false,
-        administracion: false,
-      },
-      creadoEn: new Date().toISOString(),
+    // Empresa mínima
+    const empresaRef = await addDoc(collection(db, "empresas"), {
+      nombre: empresa,
+      activa: false,
+      ownerId: cred.user.uid,
+      createdAt: serverTimestamp(),
     });
 
-    setCurrentUser(cred.user);
+    // Usuario sin permisos
+    await setDoc(doc(db, "usuarios", cred.user.uid), {
+      nombre,
+      email,
+      empresaId: empresaRef.id,
+      rol: "usuario",
+      estado: "pendiente",
+      modulos: {
+        tareas: false,
+        clientes: false,
+        gastos: false,
+        facturacion: false,
+        administracion: false,
+      },
+      creadoEn: serverTimestamp(),
+    });
+
+    return cred.user;
   };
 
-  // 🔐 Login y logout
   const login = (email, password) =>
     signInWithEmailAndPassword(auth, email, password);
+
   const logout = () => signOut(auth);
 
-  // 👁️ Escuchar sesión activa y datos del usuario
+  // 👁️ Listener de sesión + Firestore
   useEffect(() => {
-    console.log("🧩 Iniciando listener de autenticación...");
-    let unsubUser = null;
+    let unsubscribeUser = null;
 
-    const unsubAuth = onAuthStateChanged(auth, (user) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log("✅ Usuario autenticado:", user.email);
         setCurrentUser(user);
 
-        const docRef = doc(db, "usuarios", user.uid);
-        unsubUser = onSnapshot(
-          docRef,
-          (snapshot) => {
-            if (snapshot.exists()) {
-              console.log("📄 Datos de usuario cargados:", snapshot.data());
-              setUserData(snapshot.data());
-            } else {
-              console.warn("⚠️ Documento de usuario no encontrado.");
-              setUserData(null);
-            }
-            setLoading(false);
-          },
-          (error) => {
-            console.error("❌ Error al escuchar usuario:", error);
-            setLoading(false);
-          }
-        );
+        const userRef = doc(db, "usuarios", user.uid);
+        unsubscribeUser = onSnapshot(userRef, (snap) => {
+          setUserData(snap.exists() ? snap.data() : null);
+          setLoading(false);
+        });
       } else {
-        console.log("🚪 Sesión cerrada.");
         setCurrentUser(null);
         setUserData(null);
         setLoading(false);
-        if (unsubUser) unsubUser();
+        if (unsubscribeUser) unsubscribeUser();
       }
     });
 
     return () => {
-      console.log("🧹 Limpiando listeners de auth...");
-      unsubAuth();
-      if (unsubUser) unsubUser();
+      unsubscribeAuth();
+      if (unsubscribeUser) unsubscribeUser();
     };
   }, []);
 
   const value = {
     currentUser,
     userData,
+    empresaId: userData?.empresaId,
+    rol: userData?.rol,
+    modulos: userData?.modulos,
     signup,
     login,
     logout,
+    isAdmin: userData?.rol === "admin",
   };
 
   if (loading) {
-    return (
-      <div style={{ textAlign: "center", marginTop: "3rem", color: "gray" }}>
-        <h3>🔄 Cargando sesión...</h3>
-      </div>
-    );
+    return <div style={{ textAlign: "center" }}>Cargando sesión…</div>;
   }
 
   return (
@@ -109,5 +109,7 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+
 
 

@@ -18,7 +18,7 @@ const Login = () => {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/"); // Redirige al home
+      navigate("/bienvenida"); // Redirige al home
     } catch (err) {
       console.error("Error al iniciar sesión:", err);
       setError("Credenciales incorrectas o usuario no encontrado.");

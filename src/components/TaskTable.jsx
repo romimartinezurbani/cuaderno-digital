@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  query,
+  where,
+} from "firebase/firestore";
 import { db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
 import TaskFilters from "../components/TaskFilters";
 import EditTaskModal from "./EditTaskModal";
 import "../styles/table.css";
@@ -9,11 +17,11 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const TaskTable = ({ permisos }) => {
+  const { empresaId } = useAuth(); // 🔑
   const [tasks, setTasks] = useState([]);
   const [filters, setFilters] = useState({ cliente: "", tarea: "" });
   const [taskToEdit, setTaskToEdit] = useState(null);
 
-  // ✅ columnas visibles según el panel de administración o por defecto
   const [visibleCols, setVisibleCols] = useState(
     permisos?.tareas?.columnas || {
       Fecha: true,
@@ -38,59 +46,75 @@ const TaskTable = ({ permisos }) => {
     }
   );
 
-  // 🔄 Cargar tareas desde Firestore
+  // 🔄 Cargar tareas por empresa
   useEffect(() => {
+    if (!empresaId) return;
+
     const fetchTasks = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "tareas"));
-        const fetchedTasks = querySnapshot.docs
+        const q = query(
+          collection(db, "tareas"),
+          where("empresaId", "==", empresaId)
+        );
+
+        const snap = await getDocs(q);
+        const fetched = snap.docs
           .map((doc) => ({ id: doc.id, ...doc.data() }))
           .filter((task) => !task.eliminado);
-        setTasks(fetchedTasks);
+
+        setTasks(fetched);
       } catch (error) {
         console.error("Error al obtener tareas:", error);
       }
     };
-    fetchTasks();
-  }, []);
 
-  // 🔄 Actualizar columnas si cambian los permisos
+    fetchTasks();
+  }, [empresaId]);
+
   useEffect(() => {
     if (permisos?.tareas?.columnas) {
       setVisibleCols(permisos.tareas.columnas);
     }
   }, [permisos]);
 
-  // 🔍 Filtrado básico
+  // 🔍 Filtros
   const filteredTasks = tasks.filter((task) => {
     const clienteMatch =
       !filters.cliente ||
-      (task.cliente && task.cliente.toLowerCase().includes(filters.cliente.toLowerCase()));
+      task.cliente?.toLowerCase().includes(filters.cliente.toLowerCase());
+
     const tareaMatch =
       !filters.tarea ||
-      (task.tarea && task.tarea.toLowerCase().includes(filters.tarea.toLowerCase()));
+      task.tarea?.toLowerCase().includes(filters.tarea.toLowerCase());
+
     return clienteMatch && tareaMatch;
   });
 
-  // ✏️ Editar tarea
+  // ✏️ Editar
   const handleEditClick = (task) => setTaskToEdit(task);
 
   const handleSaveTask = async (updatedTask) => {
-    await updateDoc(doc(db, "tareas", updatedTask.id), updatedTask);
+    const { id, ...data } = updatedTask; // 🔑 SACAR ID
+
+    await updateDoc(doc(db, "tareas", id), data);
+
     setTasks((prev) =>
-      prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+      prev.map((task) => (task.id === id ? updatedTask : task))
     );
+
     setTaskToEdit(null);
   };
 
-  // 🗑️ Eliminar (soft delete)
+  // 🗑️ Soft delete
   const handleDeleteClick = async (taskId) => {
-    if (!window.confirm("¿Estás seguro que querés eliminar esta tarea?")) return;
+    if (!window.confirm("¿Eliminar esta tarea?")) return;
+
     await updateDoc(doc(db, "tareas", taskId), { eliminado: true });
+
     setTasks((prev) => prev.filter((task) => task.id !== taskId));
   };
 
-  // 📤 Exportar Excel
+  // 📤 Excel
   const exportToExcel = (data) => {
     const worksheet = XLSX.utils.json_to_sheet(
       data.map((task) => {
@@ -101,39 +125,39 @@ const TaskTable = ({ permisos }) => {
         return row;
       })
     );
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Tareas");
-    XLSX.writeFile(workbook, "reporte_tareas.xlsx");
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, worksheet, "Tareas");
+    XLSX.writeFile(wb, "reporte_tareas.xlsx");
   };
 
-  // 📄 Exportar PDF
+  // 📄 PDF
   const exportToPDF = (data) => {
-    const doc = new jsPDF();
-    doc.text("Reporte de Tareas", 14, 16);
+    const docPDF = new jsPDF();
+    docPDF.text("Reporte de Tareas", 14, 16);
 
     const headers = [];
-    const headerMap = [];
+    const fields = [];
 
     Object.entries(visibleCols).forEach(([key, visible]) => {
       if (visible) {
         headers.push(key);
-        headerMap.push(key);
+        fields.push(key);
       }
     });
 
-    const tableData = data.map((task) => headerMap.map((field) => task[field] || ""));
+    const body = data.map((task) => fields.map((f) => task[f] || ""));
 
-    autoTable(doc, {
+    autoTable(docPDF, {
       startY: 20,
       head: [headers],
-      body: tableData,
+      body,
       styles: { fontSize: 7 },
       theme: "grid",
     });
-    doc.save("reporte_tareas.pdf");
+
+    docPDF.save("reporte_tareas.pdf");
   };
 
-  // 🧩 Render
   return (
     <div className="table-container">
       <div className="table-header">
@@ -148,7 +172,7 @@ const TaskTable = ({ permisos }) => {
         <thead>
           <tr>
             {Object.entries(visibleCols)
-              .filter(([_, visible]) => visible)
+              .filter(([_, v]) => v)
               .map(([col]) => (
                 <th key={col}>{col}</th>
               ))}
@@ -157,23 +181,23 @@ const TaskTable = ({ permisos }) => {
         </thead>
 
         <tbody>
-          {filteredTasks.length > 0 ? (
+          {filteredTasks.length ? (
             filteredTasks.map((task) => (
               <tr key={task.id}>
                 {Object.entries(visibleCols)
-                  .filter(([_, visible]) => visible)
+                  .filter(([_, v]) => v)
                   .map(([col]) => (
                     <td key={col}>{task[col] || ""}</td>
                   ))}
                 <td>
-                  <button className="btn-action" onClick={() => handleEditClick(task)}>✏️</button>
-                  <button className="btn-action" onClick={() => handleDeleteClick(task.id)}>🗑️</button>
+                  <button onClick={() => handleEditClick(task)}>✏️</button>
+                  <button onClick={() => handleDeleteClick(task.id)}>🗑️</button>
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={Object.keys(visibleCols).length + 1} style={{ textAlign: "center" }}>
+              <td colSpan={Object.keys(visibleCols).length + 1}>
                 No hay tareas registradas
               </td>
             </tr>
@@ -193,6 +217,7 @@ const TaskTable = ({ permisos }) => {
 };
 
 export default TaskTable;
+
 
 
 

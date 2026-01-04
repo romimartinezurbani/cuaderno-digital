@@ -40,7 +40,7 @@ export const COLUMNAS_POR_DEFECTO = {
     "moneda",
     "monto",
   ],
-  clientes: [
+  contactos: [
     "nombre", 
     "cuit", 
     "email", 

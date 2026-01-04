@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc,
+  query,
+  where
+} from 'firebase/firestore';
 import { db } from '../firebase';
+import { useAuth } from '../context/AuthContext';
 import BillingForm from './BillingForm';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -9,6 +18,8 @@ import '../styles/table.css';
 import '../styles/form.css';
 
 const BillingDashboard = () => {
+  const { empresaId } = useAuth(); // 🔹 NUEVO
+
   const [invoices, setInvoices] = useState([]);
   const [filtroCliente, setFiltroCliente] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('');
@@ -16,17 +27,33 @@ const BillingDashboard = () => {
   const [editData, setEditData] = useState({});
 
   const fetchInvoices = async () => {
-    const querySnapshot = await getDocs(collection(db, 'facturas'));
-    const fetchedInvoices = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    if (!empresaId) return;
+
+    const facturasQuery = query(
+      collection(db, 'facturas'),
+      where('empresaId', '==', empresaId) // 🔹 FILTRO POR EMPRESA
+    );
+
+    const querySnapshot = await getDocs(facturasQuery);
+    const fetchedInvoices = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
     setInvoices(fetchedInvoices);
   };
 
   useEffect(() => {
     fetchInvoices();
-  }, []);
+  }, [empresaId]); // 🔹 DEPENDE DE EMPRESA
 
   const clientesUnicos = [
-    ...new Map(invoices.map(i => [`${i.cliente}||${i.cuit}`, { cliente: i.cliente, cuit: i.cuit }])).values(),
+    ...new Map(
+      invoices.map(i => [
+        `${i.cliente}||${i.cuit}`,
+        { cliente: i.cliente, cuit: i.cuit }
+      ])
+    ).values(),
   ];
 
   const facturasFiltradas = invoices.filter(f => {
@@ -80,6 +107,7 @@ const BillingDashboard = () => {
   const exportarPDF = () => {
     const docPDF = new jsPDF();
     docPDF.text('Facturas Registradas', 14, 10);
+
     const tableData = facturasFiltradas.map(f => [
       f.numero,
       `${f.cliente} (${f.cuit})`,
@@ -194,6 +222,7 @@ const BillingDashboard = () => {
 };
 
 export default BillingDashboard;
+
 
 
 

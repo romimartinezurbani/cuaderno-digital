@@ -5,9 +5,9 @@ export const MODULOS = [
     path: "/tareas",
   },
   {
-    key: "clientes",
-    label: "Clientes",
-    path: "/clientes",
+    key: "contactos",
+    label: "Contactos",
+    path: "/contactos",
   },
   {
     key: "facturacion",

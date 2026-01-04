@@ -4,7 +4,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
-import ClientesView from './modules/clientes/ClientesView';
+import ContactoView from './modules/contactos/ContactoView';
 import Tareas from './modules/tareas';
 import Facturacion from './modules/facturacion';
 import Gastos from './modules/gastos';
@@ -12,6 +12,7 @@ import Admin from './modules/administracion/Admin';
 import Layout from './components/Layout';
 import ComoOrganizarTuTrabajo from "./pages/ComoOrganizarTuTrabajo";
 import { AuthProvider } from './context/AuthContext';
+import Bienvenida from './pages/Bienvenida';
 
 function App() {
   return (
@@ -27,18 +28,20 @@ function App() {
           {/* Rutas CON navbar (dentro del Layout) */}
           <Route element={<Layout />}>
             <Route
-              path="/tareas"
+              path="/bienvenida"
               element={
-                <ProtectedRoute modulo="tareas">
-                  <Tareas />
+                <ProtectedRoute>
+                  <Bienvenida />
                 </ProtectedRoute>
               }
             />
+
+            
             <Route 
-              path="/clientes" 
+              path="/contactos" 
               element={
-                <ProtectedRoute modulo="clientes">
-                  <ClientesView />
+                <ProtectedRoute modulo="contactos">
+                  <ContactoView />
                 </ProtectedRoute>
               }
             />
@@ -58,6 +61,15 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+              <Route
+              path="/tareas"
+              element={
+                <ProtectedRoute modulo="tareas">
+                  <Tareas />
+                </ProtectedRoute>
+              }
+            />
                           <Route
               path="/administracion"
               element={

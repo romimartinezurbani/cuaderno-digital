@@ -1,0 +1,57 @@
+.bienvenida-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.bienvenida-page h1 {
+  font-size: 2.2rem;
+  color: #52683d;
+  margin-bottom: 0.5rem;
+}
+
+.bienvenida-subtitle {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 3rem;
+}
+
+.bienvenida-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
+.bienvenida-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  border: none;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.bienvenida-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+}
+
+.bienvenida-card .icon {
+  color: #6b8f3c;
+}
+
+.bienvenida-pendiente {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  background: #f7f9f4;
+  border-radius: 12px;
+  color: #555;
+}

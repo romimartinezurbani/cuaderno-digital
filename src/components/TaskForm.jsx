@@ -1,48 +1,66 @@
 import React, { useState, useEffect } from "react";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where
+} from "firebase/firestore";
 import { db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
 import "../styles/form.css";
 
-const TaskForm = ({ onTaskAdded, usuarioId }) => {
+const TaskForm = ({ onTaskAdded }) => {
+  const { empresaId, usuarioId } = useAuth(); // 🔹 CONTEXTO
+
   const [clientes, setClientes] = useState([]);
   const [formData, setFormData] = useState({
-    Fecha: "",
-    GrupoEmpresarial: "",
-    Cliente: "",
-    NroCliente: "",
-    CUIT: "",
-    RazonSocial: "",
-    CondicionIVA: "",
-    Domicilio: "",
-    Tarea: "",
-    Estancia: "",
-    Provincia: "",
-    Localidad: "",
-    Hectareas: "",
+    fecha: "",
+    grupoEmpresarial: "",
+    cliente: "",
+    nroCliente: "",
+    cuit: "",
+    razonsocial: "",
+    condicionIva: "",
+    domicilio: "",
+    tarea: "",
+    estancia: "",
+    provincia: "",
+    localidad: "",
+    hectareas: "",
     usdPorHa: "",
-    IngenieroContacto: "",
-    Coadyudante: "",
-    RetencionHabitual: "",
-    TotalCobrar: "",
-    Observaciones: "",
+    ingenieroContacto: "",
+    coadyudante: "",
+    retencionHabitual: "",
+    totalCobrar: "",
+    observaciones: "",
   });
 
   useEffect(() => {
+    if (!empresaId) return;
+
     const fetchClientes = async () => {
-      const querySnapshot = await getDocs(collection(db, "clientes"));
-      const data = querySnapshot.docs.map((doc) => ({
+      const q = query(
+        collection(db, "clientes"),
+        where("empresaId", "==", empresaId) // 🔹 FILTRO EMPRESA
+      );
+
+      const snap = await getDocs(q);
+      const data = snap.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+
       setClientes(data);
     };
+
     fetchClientes();
-  }, []);
+  }, [empresaId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Autocompletar datos del cliente seleccionado
+    // 🔹 Autocompletar cliente
     if (name === "cliente") {
       const clienteSel = clientes.find((c) => c.nombre === value);
       setFormData((prev) => ({
@@ -57,12 +75,17 @@ const TaskForm = ({ onTaskAdded, usuarioId }) => {
       return;
     }
 
-    // Cálculo automático del total
+    // 🔹 Cálculo total
     if (name === "hectareas" || name === "usdPorHa") {
       const hectareas = name === "hectareas" ? value : formData.hectareas;
-      const usdPorHa = name === "usdPorHa" ? value : formData.usdPorHa;
-      const total = (parseFloat(hectareas || 0) * parseFloat(usdPorHa || 0)).toFixed(2);
-      setFormData((prev) => ({ ...prev, [name]: value, totalCobrar: total }));
+      const usd = name === "usdPorHa" ? value : formData.usdPorHa;
+      const total = (parseFloat(hectareas || 0) * parseFloat(usd || 0)).toFixed(2);
+
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        totalCobrar: total,
+      }));
       return;
     }
 
@@ -71,39 +94,45 @@ const TaskForm = ({ onTaskAdded, usuarioId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!formData.cliente || !formData.tarea) {
       alert("Por favor complete los campos obligatorios.");
       return;
     }
+
     await addDoc(collection(db, "tareas"), {
       ...formData,
-      usuarioId,
+      empresaId,          // 🔹 CLAVE
+      usuarioId,          // 🔹 OPCIONAL / TRAZABILIDAD
       createdAt: new Date(),
     });
-    onTaskAdded();
+
+    onTaskAdded?.();
+
     setFormData({
-      Fecha: "",
-    GrupoEmpresarial: "",
-    Cliente: "",
-    NroCliente: "",
-    CUIT: "",
-    RazonSocial: "",
-    CondicionIVA: "",
-    Domicilio: "",
-    Tarea: "",
-    Estancia: "",
-    Provincia: "",
-    Localidad: "",
-    Hectareas: "",
-    usdPorHa: "",
-    IngenieroContacto: "",
-    Coadyudante: "",
-    RetencionHabitual: "",
-    TotalCobrar: "",
-    Observaciones: "",
+      fecha: "",
+      grupoEmpresarial: "",
+      cliente: "",
+      nroCliente: "",
+      cuit: "",
+      razonsocial: "",
+      condicionIva: "",
+      domicilio: "",
+      tarea: "",
+      estancia: "",
+      provincia: "",
+      localidad: "",
+      hectareas: "",
+      usdPorHa: "",
+      ingenieroContacto: "",
+      coadyudante: "",
+      retencionHabitual: "",
+      totalCobrar: "",
+      observaciones: "",
     });
   };
 
+  
   return (
     <form className="task-form" onSubmit={handleSubmit}>
       <h2>Registrar Tarea</h2>
